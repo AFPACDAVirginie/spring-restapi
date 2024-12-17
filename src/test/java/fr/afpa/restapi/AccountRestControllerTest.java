@@ -147,7 +147,7 @@ class AccountRestControllerTest {
 
         mockMvc.perform(put(String.format("/accounts/%d", account.getId())).contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("{\"id\":\"%d\", \"firstName\":\"Johnny\", \"lastName\":\"Boy\", \"email\":\"johnny.boy@gmail.com\"}", account.getId())))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     @Test

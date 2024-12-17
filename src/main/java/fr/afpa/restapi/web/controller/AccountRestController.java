@@ -6,56 +6,104 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.afpa.restapi.dao.AccountDao;
 import fr.afpa.restapi.model.Account;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * TODO ajouter la/les annotations nécessaires pour faire de "AccountRestController" un contrôleur de REST API
+ * Ajouter la/les annotations nécessaires pour faire de "AccountRestController" un contrôleur de REST API
  */
+
+@RestController
+@RequestMapping("/accounts")
 public class AccountRestController {
     private final AccountDao accountDao;
-
-    /** 
-     * TODO implémenter un constructeur
-     *  
-     * TODO injecter {@link AccountDao} en dépendance par injection via constructeur
+    /**
+     * Implémenter un constructeur
+     *
+     * Injecter {@link AccountDao} en dépendance par injection via constructeur
      * Plus d'informations -> https://keyboardplaying.fr/blogue/2021/01/spring-injection-constructeur/
      */
+	public AccountRestController(AccountDao accountDao) {
+		this.accountDao = accountDao;
+	}
 
     /**
-     * TODO implémenter une méthode qui traite les requêtes GET et qui renvoie une liste de comptes
+     * Méthode pour récupérer tous les comptes via une requête GET
+     * @return Liste des comptes
      */
+    @GetMapping
+    public List<Account> getAllAccounts() {
+        return accountDao.findAll();
+    }
 
     /**
-     * TODO implémenter une méthode qui traite les requêtes GET avec un identifiant "variable de chemin" et qui retourne les informations du compte associé
+     * Implémenter une méthode qui traite les requêtes GET avec un identifiant "variable de chemin" et qui retourne les informations du compte associé
+     *  Méthode pour récupérer un compte par son ID via une requête GET
+     *       @param id Identifiant du compte
+     *       @return Informations du compte
      * Plus d'informations sur les variables de chemin -> https://www.baeldung.com/spring-pathvariable
      */
+    @GetMapping("/{id}")
+    public ResponseEntity<Account> getAccountById(@PathVariable("id") String id) {
+        Optional<Account> account = accountDao.findById(Long.parseLong(id));
+        if (account.isPresent()) {
+            return new ResponseEntity<>(account.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
     /**
-     * TODO implémenter une méthode qui traite les requêtes POST
+     * Implémenter une méthode qui traite les requêtes POST
      * Cette méthode doit recevoir les informations d'un compte en tant que "request body", elle doit sauvegarder le compte en mémoire et retourner ses informations (en json)
-     * Tutoriel intéressant -> https://stackabuse.com/get-http-post-body-in-spring/
-     * Le serveur devrai retourner un code http de succès (201 Created)
+     * Tutoriel intéressant https://stackabuse.com/get-http-post-body-in-spring/
+     * Le serveur devrait retourner un code http de succès (201 Created)
+     *  Méthode pour créer un nouveau compte via une requête POST
+     *       @param account Données du compte à créer
+     *       @return Le compte créé avec un code HTTP 201 Created
      **/
+    @PostMapping
+    public ResponseEntity<Account> postAccount(@RequestBody Account account) {
+        Account savedAccount = accountDao.save(account);
+        return new ResponseEntity<>(savedAccount, HttpStatus.CREATED);
+    }
 
     /**
-     * TODO implémenter une méthode qui traite les requêtes PUT
+     * Implémenter une méthode qui traite les requêtes PUT
+     *  Méthode pour mettre à jour un compte via une requête PUT
+     *       @param account Données du compte à mettre à jour
+     *       @return Le compte mis à jour
      */
-
+    @PutMapping("/{id}")
+    public ResponseEntity<Account> updateAccount(@PathVariable("id") String id, @RequestBody Account account) {
+        Optional<Account> existingAccount = accountDao.findById(Long.parseLong(id));
+        if (existingAccount.isPresent()) {
+            account.setId(Long.valueOf(id));
+            Account updatedAccount = accountDao.save(account);
+            return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     /**
-     * TODO implémenter une méthode qui traite les requêtes  DELETE 
+     * Implémenter une méthode qui traite les requêtes  DELETE
+     *  Méthode pour supprimer un compte via une requête DELETE
+     *       @param id Identifiant du compte à supprimer
+     *       @return Réponse HTTP 204 No Content si la suppression est réussie
      * L'identifiant du compte devra être passé en "variable de chemin" (ou "path variable")
-     * Dans le cas d'un suppression effectuée avec succès, le serveur doit retourner un status http 204 (No content)
+     * Dans le cas d'une suppression effectuée avec succès, le serveur doit retourner un statut http 204 (No content)
      */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Account> deleteAccount(@PathVariable("id") String id) {
+        Optional<Account> existingAccount = accountDao.findById(Long.parseLong(id));
+        if (existingAccount.isPresent()) {
+            accountDao.delete(existingAccount.get());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); //Retourne un code 404 si le compte n'existe pas
+        }
+    }
 }

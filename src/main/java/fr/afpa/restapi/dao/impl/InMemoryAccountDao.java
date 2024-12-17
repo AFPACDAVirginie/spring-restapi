@@ -15,9 +15,11 @@ import fr.afpa.restapi.model.Account;
 /**
  * Une implémentation de {@link AccountDao} basée sur un {@link java.util.HashMap} 
  * 
- * TODO annoter cette classe de façon à en faire un "bean". Quelle est l'annotation à utiliser dans ce cas de figure ?
+ * Annoter cette classe de façon à en faire un "bean". Quelle est l'annotation à utiliser dans ce cas de figure ?
+ * => @Component
  * Pour vous aider, lisez l'article suivant -> https://www.axopen.com/blog/2019/02/java-spring-les-beans/
  */
+@Component
 public class InMemoryAccountDao implements AccountDao {
     /**
      * Table de hachage permettant de stocker les objets de {@link Account}
